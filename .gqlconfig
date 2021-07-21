@@ -1,0 +1,21 @@
+{
+    schema: {
+        url: 'http://localhost:3000/graphql',
+        files: 'src/schema/schema.gql',
+    },
+    query: {
+        files: [
+            {
+                match: ['src/**/*.ts', 'src/**/*.tsx'],
+                parser: ['EmbeddedQueryParser', { startTag: 'gql`', endTag: '`' }],
+                validate: {
+                    extends: 'gql-rules-query',
+                    rules: {
+                        LoneAnonymousOperation: 'off',
+                        NoUnusedVariables: 'warn',
+                    },
+                },
+            },
+        ],
+    },
+}

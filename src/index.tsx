@@ -2,17 +2,26 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { ThemeProvider } from '@material-ui/core/styles';
 
+import { GQLProvider, options } from './lib/urql';
+import { AuthProvider } from './lib/auth';
+import { endpoint } from './config';
 import theme from './utils/theme';
 import App from './App';
 import './index.css';
 
 import reportWebVitals from './reportWebVitals';
+// set app endpoint
+options.url = endpoint;
 
 ReactDOM.render(
     <React.StrictMode>
-        <ThemeProvider theme={theme}>
-            <App />
-        </ThemeProvider>
+        <GQLProvider options={options}>
+            <ThemeProvider theme={theme}>
+                <AuthProvider>
+                    <App />
+                </AuthProvider>
+            </ThemeProvider>
+        </GQLProvider>
     </React.StrictMode>,
     document.getElementById('root')
 );

@@ -1,0 +1,55 @@
+#!/usr/bin/env node
+
+const {
+  buildClientSchema,
+  getIntrospectionQuery,
+  printSchema,
+} = require("graphql");
+const {
+  getIntrospectedSchema,
+  minifyIntrospectionQuery,
+} = require("@urql/introspection");
+const { schemaToInterfaces } = require("@gql2ts/from-schema");
+const fetch = require("node-fetch");
+const json = require("json5");
+const path = require("path");
+const fs = require("fs");
+
+const defaultUrl = "http://localhost:3000/graphql";
+const config = json.parse(fs.readFileSync(".gqlconfig", "utf-8"));
+const { url = defaultUrl, files } = config.schema;
+const root_dir = process.cwd();
+
+fetch(url, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    variables: {},
+    query: getIntrospectionQuery({ descriptions: false }),
+  }),
+})
+  .then((res) => res.json())
+  .then(({ data }) => {
+    const schema = buildClientSchema(data);
+    const interfaces = schemaToInterfaces(schema)
+      .replace("declare namespace Schema {", "")
+      .replace(/(const\senum)/g, "export enum")
+      .replace(/interface/g, "export interface")
+      .replace(/\}\s*(\/\/ tslint\:enable)\s$/, "");
+    // write files for graphql and typescript
+    fs.writeFileSync(
+      path.join(root_dir, path.dirname(files), "schema.gql"),
+      printSchema(schema, { commentDescriptions: false }).replace(
+        /(""".*""")/g,
+        ""
+      )
+    );
+    fs.writeFileSync(
+      path.join(root_dir, path.dirname(files), "schema.json"),
+      JSON.stringify(minifyIntrospectionQuery(getIntrospectedSchema(data)))
+    );
+    fs.writeFileSync(
+      path.join(root_dir, path.dirname(files), "index.ts"),
+      `/* eslint-disable @typescript-eslint/no-explicit-any */\n${interfaces}`
+    );
+  });
