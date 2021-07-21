@@ -5,6 +5,7 @@ import MomentUtils from '@date-io/moment';
 import moment from 'moment';
 
 import './App.css';
+import Modules from './modules';
 
 class DateUtils extends MomentUtils {
     dateFormat = 'DD/MM/yyyy';
@@ -15,7 +16,7 @@ function App() {
         <MuiPickersUtilsProvider libInstance={moment} utils={DateUtils}>
             <div className="App">
                 <CssBaseline />
-                <div>Content</div>
+                <Modules />
             </div>
         </MuiPickersUtilsProvider>
     );
